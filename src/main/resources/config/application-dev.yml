@@ -1,0 +1,6 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://admin:admin@form-builder.btfkfek.mongodb.net/?retryWrites=true&w=majority&appName=Form-Builder
+      database: form_builder
+      auto-index-creation: true
