@@ -8,7 +8,7 @@
         <version>3.4.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>org.bnbdevelopers</groupId>
+    <groupId>org.tpc</groupId>
     <artifactId>form_builder</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Form Builder</name>
