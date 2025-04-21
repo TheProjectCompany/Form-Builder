@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FieldWatchRegistry {
+public class  FieldWatchRegistry {
     private final Map<String, List<FieldWatcher>> fieldWatchersMap =  new HashMap<>();
 
     public void registerFieldWatcher (String fieldId, FieldWatcher fieldWatcher) {

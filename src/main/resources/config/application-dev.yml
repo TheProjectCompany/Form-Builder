@@ -4,3 +4,12 @@ spring:
       uri: mongodb+srv://admin:admin@form-builder.btfkfek.mongodb.net/?retryWrites=true&w=majority&appName=Form-Builder
       database: form_builder
       auto-index-creation: true
+  datasource:
+    name: form-builder-core
+    url: jdbc:mysql://form-builder-tpc-form-builder.i.aivencloud.com:25681/form-builder-core
+    username: avnadmin
+    password: AVNS_--NA-VJJC3LBRnuq6yL
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none

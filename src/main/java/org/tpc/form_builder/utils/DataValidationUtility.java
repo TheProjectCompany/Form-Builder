@@ -4,9 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.tpc.form_builder.constants.CommonConstants;
-import org.tpc.form_builder.models.FormField;
-import org.tpc.form_builder.models.FormFieldData;
-import org.tpc.form_builder.models.ValidationRules;
+import org.tpc.form_builder.enums.FieldType;
+import org.tpc.form_builder.models.*;
 import org.tpc.form_builder.models.repository.FormFieldRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -28,7 +27,7 @@ public class DataValidationUtility {
     public Map<String, List<String>> validateDataFields(Map<String, FormFieldData> dataFieldsMap) {
         log.info("Validating data fields");
 
-        // Initialize error map to collect field-wise validation errors
+        // Initialize an error map to collect field-wise validation errors
         Map<String, List<String>> errorMap = new HashMap<>();
 
         if (dataFieldsMap == null || dataFieldsMap.isEmpty()) {
@@ -36,17 +35,23 @@ public class DataValidationUtility {
             return errorMap;
         }
 
-        // Fetch all form fields that are active and present in the input
+        // Fetches all form fields that are active and present in the input
         List<FormField> formFields = formFieldRepository.findAllByClientIdAndIsActiveAndIdIn(
                 CommonConstants.DEFAULT_CLIENT,
                 Boolean.TRUE,
                 new ArrayList<>(dataFieldsMap.keySet())
         );
+        
+        List<String> dropdownIdList = formFields.stream()
+                .filter(formField -> FieldType.DROPDOWN.equals(formField.getFieldType()))
+                .map(FormField::getReferenceId)
+                .toList();
+        
 
         for (FormField formField : formFields) {
             String fieldId = formField.getId();
 
-            // Safety check: skip if data field is missing for the current form field
+            // Safety check: skip if the data field is missing for the current form field
             if (!dataFieldsMap.containsKey(fieldId)) {
                 log.warn("Data field missing for field ID: {}", fieldId);
                 continue;
@@ -65,7 +70,7 @@ public class DataValidationUtility {
 
         // 🚫 Skip validation for read-only fields or auto-computed fields or empty validation rules
         if (Boolean.TRUE.equals(formField.getReadOnly()) ||
-                (formField.getComputationRules() != null && Boolean.TRUE.equals(formField.getComputationRules().isEnabled())) ||
+                (formField.getComputationRules() != null && formField.getComputationRules().isEnabled()) ||
                 formField.getValidationRules() == null) {
             return errors;
         }
@@ -90,7 +95,7 @@ public class DataValidationUtility {
             case CHECKBOX -> validateBooleanField(formField, formFieldData.getValues());
             case DATE -> validateDateField(formField, formFieldData.getValues());
             case DATETIME -> validateDateTimeField(formField, formFieldData.getValues());
-//            case DROPDOWN -> validateDropdownField(formField, formFieldData.getValues());
+            case DROPDOWN -> validateDropdownField(formField, formFieldData.getValues(), new HashMap<>());
             // 🧩 Add more field types here as you expand
             default -> List.of();  // No validation for unhandled types
         });
@@ -367,5 +372,24 @@ public class DataValidationUtility {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid number: " + input, e);
         }
+    }
+    
+    private List<String> validateDropdownField(FormField formField, List<String> values, Map<String, Dropdown> dropdownMap) {
+        if (formField.getReferenceId() == null || dropdownMap == null || dropdownMap.get(formField.getReferenceId()) == null) {
+            log.error("Dropdown reference ID or dropdown map is null. Cannot validate dropdown field.");
+            return List.of("Invalid dropdown reference ID or dropdown map");
+        }
+        Dropdown selectedDropdown = dropdownMap.get(formField.getReferenceId());
+        if (CollectionUtils.isEmpty(selectedDropdown.getDropdownElements())) {
+            log.error("Dropdown elements are empty. Cannot validate dropdown field.");
+            return List.of("Dropdown elements are empty");
+        }
+        List<String> selectedDropdownValues = selectedDropdown.getDropdownElements().stream()
+                .filter(DropdownElement::isActive)
+                .map(DropdownElement::getId)
+                .toList();
+        if (!new HashSet<>(selectedDropdownValues).containsAll(values))
+            return List.of("Invalid dropdown values !!");
+        return List.of();
     }
 }

@@ -5,3 +5,6 @@ server:
 spring:
   application:
     name: Form Builder
+  jpa:
+    hibernate:
+      ddl-auto: create
