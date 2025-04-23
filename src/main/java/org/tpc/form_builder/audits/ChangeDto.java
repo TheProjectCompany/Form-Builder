@@ -12,6 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangeDto {
-    private List<String> previousValues;
-    private List<String> currentValues;
+    private Object previousValue;
+    private Object currentValue;
 }

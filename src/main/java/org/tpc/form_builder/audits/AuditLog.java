@@ -23,22 +23,21 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder.Default
     @Column(nullable = false)
+    private String clientId = CommonConstants.DEFAULT_CLIENT;
+
     private String entityId;
 
     @Column(nullable = false)
     private String repository;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private String clientId = CommonConstants.DEFAULT_CLIENT;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
 
     @Convert(converter = ChangeMapConverter.class)
-    @Column(columnDefinition = "json    ")
+    @Column(columnDefinition = "json")
     private Map<String, ChangeDto> changes;
 
     @Builder.Default

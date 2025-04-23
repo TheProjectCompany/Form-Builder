@@ -1,5 +1,6 @@
 package org.tpc.form_builder.audits;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -30,6 +31,14 @@ import java.util.concurrent.Executors;
 @Log4j2
 public class AuditLogService {
     private final ApplicationContext applicationContext;
+    private final AuditLogQueue auditLogQueue;
+
+    private Map<String, Object> repositoryMap;
+
+    @PostConstruct
+    public void init() {
+        repositoryMap = applicationContext.getBeansWithAnnotation(org.springframework.stereotype.Repository.class);
+    }
 
     @Pointcut("execution(* org.springframework.data.mongodb.repository.MongoRepository.save(..)) && args(..)")
     public void mongoSavePointcut() {}
@@ -38,8 +47,6 @@ public class AuditLogService {
     public Object afterSave(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
-
-        Map<String, Object> repositoryMap = applicationContext.getBeansWithAnnotation(org.springframework.stereotype.Repository.class);
 
         Object[] args = joinPoint.getArgs();
         Object entity;
@@ -52,7 +59,7 @@ public class AuditLogService {
         }
         // If this is a save method
         if ("save".equalsIgnoreCase(joinPoint.getSignature().getName())) {
-            String repositoryName = this.findRepositoryNameForSavedEntity(entity, repositoryMap);
+            String repositoryName = this.findRepositoryNameForSavedEntity(entity);
             String entityId = this.getSavedEntityIdentifier(entity);
 
             Object oldEntity = this.getPreviousObject(entity, entityId, repositoryMap.get(repositoryName));
@@ -71,7 +78,7 @@ public class AuditLogService {
     private void compareAndSendObjects(Object entity, Object previousEntity, String entityId, String repositoryName) {
         long startTime = System.currentTimeMillis();
         log.info("Comparing objects for Audit Log");
-
+        Map<String, ChangeDto> diffMap = new HashMap<>();
         try {
             if (entity != null && previousEntity != null) {
                 Class<?> entityClass = entity.getClass();
@@ -83,6 +90,13 @@ public class AuditLogService {
 
                     if ((oldValue != null && !oldValue.equals(newValue)) || (oldValue == null && newValue != null)) {
                         log.info("Audit Log for field {}: \n{} \n → \n{}", field.getName(), oldValue, newValue);
+                        diffMap.put(
+                                field.getName(),
+                                ChangeDto.builder()
+                                        .previousValue(oldValue)
+                                        .currentValue(newValue)
+                                        .build()
+                        );
                     }
                 }
             }
@@ -95,9 +109,11 @@ public class AuditLogService {
                 .clientId(CommonConstants.DEFAULT_CLIENT)
                 .entityId(entityId)
                 .repository(repositoryName)
+                // Change this to the actual user ID when we have authentication
                 .associatedUserId(0L)
+                .changes(diffMap)
                 .build();
-
+        auditLogQueue.enqueue(auditDto);
         long endTime = System.currentTimeMillis();
         log.info("Time taken to compare objects: {} ms", endTime - startTime);
     }
@@ -138,7 +154,7 @@ public class AuditLogService {
         }
     }
 
-    private String findRepositoryNameForSavedEntity(Object entity, Map<String, Object> repositoryMap) {
+    private String findRepositoryNameForSavedEntity(Object entity) {
         Class<?> entityClass = entity.getClass();
         if (CollectionUtils.isEmpty(repositoryMap)) {
             log.error("No repositories found in application context");

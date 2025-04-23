@@ -2,6 +2,7 @@ package org.tpc.form_builder.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.tpc.form_builder.models.ProfileData;
 import org.tpc.form_builder.service.ProfileDataService;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,11 @@ public class ProfileDataController {
             return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
+    @PostMapping
+//    @PreAuthorize("@permissionEvaluator.hasProfilePermission(authentication, #profileData.getProfileId(), 'CREATE')")
+    public ResponseEntity<ProfileData> createProfileData(@RequestBody ProfileData profileData) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(profileDataService.createProfileData(profileData));
     }
 }

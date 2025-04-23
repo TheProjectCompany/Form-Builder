@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 @OpenAPIDefinition(
         info= @Info(
-                title = "BNBDevelopers Form Builder Service Documentation",
+                title = "TPC Form Builder Service Documentation",
                 version = "v1",
                 description = "This is documentation of Form Builder Service APIs"
         ),
