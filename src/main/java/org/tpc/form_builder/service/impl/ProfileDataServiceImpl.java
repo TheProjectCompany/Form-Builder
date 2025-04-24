@@ -22,7 +22,7 @@ public class ProfileDataServiceImpl  implements ProfileDataService {
 
     @Override
     public ProfileData createProfileData(ProfileData profileData) {
-        Map<String, List<String>> validationErrors = dataValidationUtility.validateDataFields(profileData.getFieldDataMap());
+        Map<String, List<String>> validationErrors = dataValidationUtility.validateDataFields(profileData.getDataMap());
         if (!validationErrors.isEmpty()) {
             throw new DataValidationException("Invalid Data", validationErrors);
         }
@@ -31,6 +31,6 @@ public class ProfileDataServiceImpl  implements ProfileDataService {
 
     @Override
     public Map<String, List<String>> validateProfileData(ProfileData profileData) {
-        return dataValidationUtility.validateDataFields(profileData.getFieldDataMap());
+        return dataValidationUtility.validateDataFields(profileData.getDataMap());
     }
 }

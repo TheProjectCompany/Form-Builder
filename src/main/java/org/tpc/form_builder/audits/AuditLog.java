@@ -30,6 +30,9 @@ public class AuditLog {
     private String entityId;
 
     @Column(nullable = false)
+    private String instanceId;
+
+    @Column(nullable = false)
     private String repository;
 
     @ManyToOne(fetch = FetchType.LAZY)

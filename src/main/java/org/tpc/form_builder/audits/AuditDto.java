@@ -16,11 +16,13 @@ import java.util.Map;
 @AllArgsConstructor
 public class AuditDto {
     private String id;
-    private String entityId;
-    private String repository;
     @Builder.Default
     private String clientId = CommonConstants.DEFAULT_CLIENT;
+    private String companyId;
+    private String instanceId;
+    private String repository;
     private Long associatedUserId;
+    private AuditAction action;
     @Builder.Default
     private Map<String, ChangeDto> changes = new HashMap<>();
     @Builder.Default

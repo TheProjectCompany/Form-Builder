@@ -24,6 +24,4 @@ public class Dropdown extends BaseAttributes{
     @Builder.Default
     private DropdownType type = DropdownType.CUSTOM;
 
-    @Builder.Default
-    private boolean isActive = true;
 }

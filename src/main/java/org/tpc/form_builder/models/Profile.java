@@ -23,6 +23,4 @@ public class Profile extends BaseAttributes {
     private String clonedFrom;
     @Builder.Default
     private Integer sortOrder = 1;
-    @Builder.Default
-    private Boolean isActive = true;
 }

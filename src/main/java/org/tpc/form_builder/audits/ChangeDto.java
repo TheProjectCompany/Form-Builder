@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.tpc.form_builder.enums.FieldType;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangeDto {
-    private Object previousValue;
-    private Object currentValue;
+    private AuditAction action;
+    private FieldType fieldType;
+    private List<Object> previousValues;
+    private List<Object> newValues;
 }

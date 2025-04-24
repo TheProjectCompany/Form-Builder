@@ -1,6 +1,7 @@
 package org.tpc.form_builder.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -16,8 +17,13 @@ import java.time.Instant;
 public class AuditAttributes {
     @CreatedDate
     private Instant createdOn;
+
     @LastModifiedDate
     private Instant modifiedOn;
+
     private String createdBy;
     private String modifiedBy;
+
+    @Builder.Default
+    private Boolean isActive = true;
 }

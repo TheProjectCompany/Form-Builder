@@ -51,7 +51,5 @@ public class FormField extends BaseAttributes {
     @NotNull(message = "Sort order must not be null")
     @Builder.Default
     private int sortOrder = 1;
-
-    private Boolean isActive;
 }
 

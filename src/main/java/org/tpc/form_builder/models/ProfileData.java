@@ -20,5 +20,5 @@ public class ProfileData extends BaseAttributes{
     private String id;
     private String profileId;
     @Builder.Default
-    private Map<String, FormFieldData> fieldDataMap = new HashMap<>();
+    private Map<String, FormFieldData> dataMap = new HashMap<>();
 }

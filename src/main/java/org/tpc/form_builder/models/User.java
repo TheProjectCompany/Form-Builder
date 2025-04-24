@@ -42,7 +42,4 @@ public class User extends BaseAttributes {
     @Builder.Default
     private UserStatus status = UserStatus.ACTIVE;
 
-    @Builder.Default
-    private boolean isActive = true;
-
 }
