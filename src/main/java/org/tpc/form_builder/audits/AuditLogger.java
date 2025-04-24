@@ -24,6 +24,7 @@ import org.tpc.form_builder.models.FormFieldData;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public class AuditLogService {
+public class AuditLogger {
     private final ApplicationContext applicationContext;
     private final AuditLogQueue auditLogQueue;
 
@@ -178,6 +179,7 @@ public class AuditLogService {
                 .repository(repositoryName)
                 .associatedUserId(userId)
                 .changes(diffMap)
+                .createdOn(Instant.now())
                 .build();
 
         auditLogQueue.enqueue(auditDto);

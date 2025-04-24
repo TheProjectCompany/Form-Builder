@@ -27,7 +27,7 @@ public class AuditLog {
     @Column(nullable = false)
     private String clientId = CommonConstants.DEFAULT_CLIENT;
 
-    private String entityId;
+    private String companyId;
 
     @Column(nullable = false)
     private String instanceId;
