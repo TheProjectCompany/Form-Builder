@@ -2,6 +2,7 @@ package org.tpc.form_builder.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.tpc.form_builder.audits.AuditDto;
@@ -19,11 +20,20 @@ public class AuditLogsConsumer {
     private final AuditLogQueue auditLogQueue;
     private final AuditLogRepository auditLogRepository;
     private final AuditLogMapper auditLogMapper;
+    private final AuditLogsConsumer self;
 
     @Scheduled(fixedDelay = 10000)
     public void consumeAuditLogs() {
+        if (auditLogQueue.size() > 1000) {
+            self.consumeAuditLogHelper();
+        }
+    }
+
+    @Async("asyncTaskExecutor")
+    public void consumeAuditLogHelper() {
         ZonedDateTime now = ZonedDateTime.now();
         log.info("Audit Log Consumer ({}): {} items in queue", now, auditLogQueue.size());
+
         List<AuditDto> batch = auditLogQueue.dequeueBatch(100);
 
         if (!batch.isEmpty()) {
