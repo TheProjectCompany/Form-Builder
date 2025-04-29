@@ -21,6 +21,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.tpc.form_builder.constants.CommonConstants;
 import org.tpc.form_builder.models.FormFieldData;
+import org.tpc.form_builder.models.Section;
+import org.tpc.form_builder.queues.AuditLogQueue;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -42,7 +44,8 @@ public class AuditLogger {
     private Map<String, Object> repositoryMap;
     private ExecutorService executorService;
 
-    private static final String FIELD_KEYWORD = "dataMap";
+    private static final String FIELD_DATA_KEYWORD = "dataMap";
+    private static final String PROFILE_SECTION_KEYWORD = "sections";
 
     @PostConstruct
     public void init() {
@@ -189,7 +192,8 @@ public class AuditLogger {
 
     private Map<String, ChangeDto> compareDifferences(String fieldName, Object previousObject, Object newObject) {
         return switch (fieldName) {
-            case FIELD_KEYWORD -> compareFieldObject(previousObject, newObject);
+            case FIELD_DATA_KEYWORD -> compareFieldObject(previousObject, newObject);
+            case PROFILE_SECTION_KEYWORD -> compareFieldObject(previousObject, newObject);
             default -> Map.of(fieldName, compareNormalObjects(previousObject, newObject));
         };
     }
@@ -221,7 +225,7 @@ public class AuditLogger {
 
                     AuditAction action = previousValue.compareEquals(newValue);
                     if (action != null) {
-                        diffMap.put(FIELD_KEYWORD + "." + key, ChangeDto.builder()
+                        diffMap.put(FIELD_DATA_KEYWORD + "." + key, ChangeDto.builder()
                                 .action(action)
                                 .fieldType(previousValue.getFieldType())
                                 .previousValues(List.of(previousValue))
@@ -236,7 +240,7 @@ public class AuditLogger {
                 String key = entry.getKey();
                 if (!previousData.containsKey(key)) {
                     FormFieldData newValue = entry.getValue();
-                    diffMap.put(FIELD_KEYWORD + "." + key, ChangeDto.builder()
+                    diffMap.put(FIELD_DATA_KEYWORD + "." + key, ChangeDto.builder()
                             .action(AuditAction.CREATE)
                             .fieldType(newValue.getFieldType())
                             .previousValues(null)
@@ -245,6 +249,16 @@ public class AuditLogger {
                 }
             }
         }
+        return diffMap;
+    }
+
+    private Map<String, ChangeDto> compareSectionObject(Object previousObject, Object newObject) {
+        Map<String, ChangeDto> diffMap = new HashMap<>();
+        // TODO - Complete this section Audit Logging
+        @SuppressWarnings("unchecked")
+        List<Section> previousSectionList = (List<Section>) previousObject;
+        @SuppressWarnings("unchecked")
+        List<Section> newSectionList = (List<Section>) newObject;
         return diffMap;
     }
 

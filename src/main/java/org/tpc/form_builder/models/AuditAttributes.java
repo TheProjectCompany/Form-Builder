@@ -1,5 +1,6 @@
 package org.tpc.form_builder.models;
 
+import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.Instant;
 
 @Data
+@MappedSuperclass
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor

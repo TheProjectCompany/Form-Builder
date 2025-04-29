@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tpc.form_builder.audits.AuditDto;
 import org.tpc.form_builder.constants.CommonConstants;
-import org.tpc.form_builder.service.AuditLogsViewService;
+import org.tpc.form_builder.service.AuditLogsService;
 
 @RestController
 @RequestMapping("/api/v1/audit-logs")
@@ -19,25 +19,25 @@ import org.tpc.form_builder.service.AuditLogsViewService;
 @Log4j2
 public class AuditLogsController {
 
-    private final AuditLogsViewService auditLogsViewService;
+    private final AuditLogsService auditLogsService;
 
     @GetMapping("/client")
     public ResponseEntity<Page<AuditDto>> getClientAuditLogs(@PageableDefault(size = 20, sort = CommonConstants.UPDATED_ON, direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(auditLogsViewService.getClientAuditLogs(CommonConstants.DEFAULT_CLIENT, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(auditLogsService.getClientAuditLogs(CommonConstants.DEFAULT_CLIENT, pageable));
     }
 
     @GetMapping("/company/{company-id}")
     public ResponseEntity<Page<AuditDto>> getCompanyAuditLogs(@PathVariable("company-id") String companyId, @PageableDefault(size = 20, sort = CommonConstants.UPDATED_ON, direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(auditLogsViewService.getCompanyAuditLogs(CommonConstants.DEFAULT_CLIENT, companyId, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(auditLogsService.getCompanyAuditLogs(CommonConstants.DEFAULT_CLIENT, companyId, pageable));
     }
 
     @GetMapping("/user/{user-public-id}")
     public ResponseEntity<Page<AuditDto>> getUserAuditLogs(@PathVariable("user-public-id") String userPublicId, @PageableDefault(size = 20, sort = CommonConstants.UPDATED_ON, direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(auditLogsViewService.getUsersAuditLogs(CommonConstants.DEFAULT_CLIENT, userPublicId, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(auditLogsService.getUsersAuditLogs(CommonConstants.DEFAULT_CLIENT, userPublicId, pageable));
     }
 
     @GetMapping("/instance/{instance-id}")
     public ResponseEntity<Page<AuditDto>> getInstanceAuditLogs(@PathVariable("instance-id") String instanceId, @PageableDefault(size = 20, sort = CommonConstants.UPDATED_ON, direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(auditLogsViewService.getInstanceAuditLogs(CommonConstants.DEFAULT_CLIENT, instanceId, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(auditLogsService.getInstanceAuditLogs(CommonConstants.DEFAULT_CLIENT, instanceId, pageable));
     }
 }

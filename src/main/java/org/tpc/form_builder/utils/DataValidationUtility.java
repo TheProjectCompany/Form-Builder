@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.tpc.form_builder.constants.CommonConstants;
+import org.tpc.form_builder.enums.ComputationScope;
 import org.tpc.form_builder.enums.FieldType;
 import org.tpc.form_builder.models.*;
 import org.tpc.form_builder.models.repository.FormFieldRepository;
@@ -24,7 +25,28 @@ public class DataValidationUtility {
 
     private final FormFieldRepository formFieldRepository;
 
-    public Map<String, List<String>> validateDataFields(Map<String, FormFieldData> dataFieldsMap) {
+    public Map<String, List<String>> validateProfileData(String profileId, Map<String, FormFieldData> profileDataFields) {
+        log.info("Validating profile data");
+        // Fetches all form fields that are active and present in the input
+        List<FormField> formFields = formFieldRepository.findAllByClientIdAndProfileIdAndIsActive(
+                CommonConstants.DEFAULT_CLIENT,
+                profileId,
+                Boolean.TRUE
+        );
+        return validateDataFields(formFields, profileDataFields);
+    }
+
+    public Map<String, List<String>> validateSpecificFields(Map<String, FormFieldData> dataFieldsMap) {
+        log.info("Validating Specific fields");
+        List<FormField> validationFields = formFieldRepository.findAllByClientIdAndIsActiveAndIdIn(
+                CommonConstants.DEFAULT_CLIENT,
+                Boolean.TRUE,
+                dataFieldsMap.keySet().stream().toList()
+        );
+        return validateDataFields(validationFields, dataFieldsMap);
+    }
+
+    public Map<String, List<String>> validateDataFields(List<FormField> validationFieldsList, Map<String, FormFieldData> dataFieldsMap) {
         log.info("Validating data fields");
 
         // Initialize an error map to collect field-wise validation errors
@@ -35,20 +57,15 @@ public class DataValidationUtility {
             return errorMap;
         }
 
-        // Fetches all form fields that are active and present in the input
-        List<FormField> formFields = formFieldRepository.findAllByClientIdAndIsActiveAndIdIn(
-                CommonConstants.DEFAULT_CLIENT,
-                Boolean.TRUE,
-                new ArrayList<>(dataFieldsMap.keySet())
-        );
+
         
-        List<String> dropdownIdList = formFields.stream()
+        List<String> dropdownIdList = validationFieldsList.stream()
                 .filter(formField -> FieldType.DROPDOWN.equals(formField.getFieldType()))
                 .map(FormField::getReferenceId)
                 .toList();
         
 
-        for (FormField formField : formFields) {
+        for (FormField formField : validationFieldsList) {
             String fieldId = formField.getId();
 
             // Safety check: skip if the data field is missing for the current form field
@@ -58,19 +75,19 @@ public class DataValidationUtility {
             }
 
             // Perform validation and collect errors for each field
-            List<String> fieldErrors = validateData(formField, dataFieldsMap.get(fieldId));
+            List<String> fieldErrors = validateFieldData(formField, dataFieldsMap.get(fieldId));
             errorMap.put(fieldId, fieldErrors);
         }
 
         return errorMap;
     }
 
-    public List<String> validateData(FormField formField, FormFieldData formFieldData) {
+    public List<String> validateFieldData(FormField formField, FormFieldData formFieldData) {
         List<String> errors = new ArrayList<>();
 
         // 🚫 Skip validation for read-only fields or auto-computed fields or empty validation rules
         if (Boolean.TRUE.equals(formField.getReadOnly()) ||
-                (formField.getComputationRules() != null && formField.getComputationRules().isEnabled()) ||
+                (formField.getComputationRules() != null && ComputationScope.DISABLED.equals(formField.getComputationRules().getComputationScope())) ||
                 formField.getValidationRules() == null) {
             return errors;
         }

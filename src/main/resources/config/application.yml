@@ -5,6 +5,8 @@ server:
 spring:
   application:
     name: Form Builder
+  main:
+    allow-bean-definition-overriding: true
   jpa:
     hibernate:
       ddl-auto: create

@@ -13,10 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Computation {
-    private boolean isEnabled;
     // Dependent Field IDs
     private List<String> dependsOn;
     // Calculation Expression
     private String expression;
-    private ComputationScope computationScope;
+    @Builder.Default
+    private ComputationScope computationScope = ComputationScope.DISABLED;
 }
