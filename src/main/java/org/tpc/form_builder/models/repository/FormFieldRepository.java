@@ -13,6 +13,6 @@ public interface FormFieldRepository extends MongoRepository<FormField, String> 
 
     List<FormField> findAllByClientIdAndIsActiveAndIdIn(String clientId, Boolean isActive, List<String> ids);
 
-    List<FormField> findAllByClientIdAndIsActiveTrueAndComputationRules_ComputationScopeNotAndComputationRules_DependsOnContains(String clientId, ComputationScope computationScope, List<String> dependsOn);
+    List<FormField> findAllByClientIdAndIsActiveTrueAndComputationRules_ComputationScopeNotAndComputationRules_DependsOnIn(String clientId, ComputationScope computationScope, List<String> dependsOn);
 
 }

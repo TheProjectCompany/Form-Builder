@@ -5,12 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
 import org.tpc.form_builder.audits.AuditAction;
 import org.tpc.form_builder.enums.SectionType;
 import org.springframework.data.annotation.Id;
-
-import java.util.HashSet;
 
 @Data
 @Builder

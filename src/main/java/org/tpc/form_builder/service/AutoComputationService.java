@@ -21,7 +21,7 @@ public class AutoComputationService {
 
     public void triggerAutoComputations(Map<String, FormFieldData> updatedFieldDataMap) {
         log.info("Triggering auto-computations");
-        List<FormField> affectingFields = formFieldRepository.findAllByClientIdAndIsActiveTrueAndComputationRules_ComputationScopeNotAndComputationRules_DependsOnContains(
+        List<FormField> affectingFields = formFieldRepository.findAllByClientIdAndIsActiveTrueAndComputationRules_ComputationScopeNotAndComputationRules_DependsOnIn(
                 CommonConstants.DEFAULT_CLIENT,
                 ComputationScope.DISABLED,
                 updatedFieldDataMap.keySet().stream().toList()
