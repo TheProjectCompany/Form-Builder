@@ -19,6 +19,8 @@ public class FormFieldData {
     private FieldType fieldType;
     private List<String> values;
     private String keyword;
+    @Builder.Default
+    private boolean visible = true;
 
     public AuditAction compareEquals(FormFieldData otherData) {
         if (otherData == null) {

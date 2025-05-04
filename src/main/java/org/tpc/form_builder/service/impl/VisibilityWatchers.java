@@ -1,0 +1,78 @@
+package org.tpc.form_builder.service.impl;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.tpc.form_builder.enums.WatcherScope;
+import org.tpc.form_builder.models.*;
+import org.tpc.form_builder.service.FieldWatchers;
+import org.tpc.form_builder.utils.FieldWatcherUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service("visibilityWatchers")
+@RequiredArgsConstructor
+@Log4j2
+public class VisibilityWatchers implements FieldWatchers {
+
+    private final FieldWatcherUtils fieldWatcherUtils;
+
+    @Override
+    @Async("asyncTaskExecutor")
+    public void registerWatcher(FormField formField) {
+        log.debug("Registering field watchers for profileId: {} fieldId: {}", formField.getProfileId(), formField.getId());
+        Map<String, Set<String>> sourceField = aggregateSourceFields(formField.getVisibilityRules());
+
+        Set<String> sourceFieldsSet = sourceField.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+
+        if (CollectionUtils.isEmpty(sourceFieldsSet)) {
+            log.debug("No watchers registered for profileId: {} fieldId: {}", formField.getProfileId(), formField.getId());
+            return;
+        }
+
+        fieldWatcherUtils.registerMultipleWatchers(WatcherScope.VISIBILITY_COMPUTATION, sourceFieldsSet, formField.getProfileId(), formField.getId());
+    }
+
+    @Override
+    public void updateWatchers(FormField formField) {
+        // TODO - Complete this to update watchers when visibility rules change
+    }
+
+    @Override
+    public void consumeWatchers(List<FieldWatcher> watchers, ProfileData instance) {
+        // TODO - Complete this to consume watchers when values change
+        if (CollectionUtils.isEmpty(watchers)) {
+            return;
+        }
+
+    }
+
+    private Map<String, Set<String>> aggregateSourceFields(Visibility visibility) {
+        if (visibility == null || !Boolean.TRUE.equals(visibility.getEnabled())) {
+            return Map.of(); // Return an empty immutable map
+        }
+
+        Map<String, Set<String>> sourceFields = new HashMap<>();
+        extractSourceFields(visibility.getConditions(), sourceFields);
+        return sourceFields;
+    }
+
+    private void extractSourceFields(ConditionBuilder condition, Map<String, Set<String>> resultMap) {
+        switch (condition.getConditionType()) {
+            case JOIN -> addJoinFields(condition, resultMap);
+            case AND, OR -> condition.getJoinExpressions()
+                    .forEach(subCondition -> extractSourceFields(subCondition, resultMap));
+        }
+    }
+
+    private void addJoinFields(ConditionBuilder condition, Map<String, Set<String>> resultMap) {
+        condition.getJoinExpressions().forEach(expr -> resultMap
+                .computeIfAbsent(expr.getProfileId(), key -> new HashSet<>())
+                .add(expr.getFieldId()));
+    }
+}

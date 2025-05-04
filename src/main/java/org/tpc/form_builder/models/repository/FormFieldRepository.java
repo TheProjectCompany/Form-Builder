@@ -1,5 +1,6 @@
 package org.tpc.form_builder.models.repository;
 
+import org.springframework.data.mongodb.repository.Query;
 import org.tpc.form_builder.enums.ComputationScope;
 import org.tpc.form_builder.models.FormField;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -13,6 +14,24 @@ public interface FormFieldRepository extends MongoRepository<FormField, String> 
 
     List<FormField> findAllByClientIdAndIsActiveAndIdIn(String clientId, Boolean isActive, List<String> ids);
 
-    List<FormField> findAllByClientIdAndIsActiveTrueAndComputationRules_ComputationScopeNotAndComputationRules_DependsOnIn(String clientId, ComputationScope computationScope, List<String> dependsOn);
-
+    @Query("""
+{
+  clientId: ?0,
+  isActive: true,
+  $or: [
+    { computationRules: { $ne: null } },
+    {
+      $and: [
+        { "computationRules.computationScope": { $ne: ?1 } },
+        { "computationRules.dependsOn": { $in: ?2 } }
+      ]
+    }
+  ]
+}
+""")
+    List<FormField> findAllByClientIdAndIsActiveTrueAndComputationRules_ComputationScopeNotAndComputationRules_DependsOnIn(
+            String clientId,
+            ComputationScope computationScope,
+            List<String> dependsOn
+    );
 }

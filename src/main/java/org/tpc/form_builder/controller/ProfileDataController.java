@@ -37,17 +37,22 @@ public class ProfileDataController {
         return ResponseEntity.status(HttpStatus.CREATED).body(profileDataService.createProfileData(profileData));
     }
 
-    @PutMapping("/instance/{instance-id}")
+    @GetMapping("/{instance-id}")
+    public ResponseEntity<ProfileData> getProfileDataInstance(@PathVariable("instance-id") String instanceId) {
+        return ResponseEntity.status(HttpStatus.OK).body(profileDataService.getProfileDataInstance(instanceId));
+    }
+
+    @PutMapping("/{instance-id}")
     public ResponseEntity<ProfileData> updateProfileData(@PathVariable("instance-id") String instanceId, @RequestBody ProfileData profileData) {
         return ResponseEntity.status(HttpStatus.OK).body(profileDataService.updateProfileData(instanceId, profileData));
     }
 
-    @PatchMapping("/instance/{instance-id}")
+    @PatchMapping("/{instance-id}")
     public ResponseEntity<ProfileData> updateProfileDataFields(@PathVariable("instance-id") String instanceId, @RequestBody Map<String, FormFieldData> fieldData) {
         return ResponseEntity.status(HttpStatus.OK).body(profileDataService.updateProfileDataFields(instanceId, fieldData));
     }
 
-    @DeleteMapping("/instance/{instance-id}")
+    @DeleteMapping("/{instance-id}")
     public ResponseEntity<Void> deleteProfileData(@PathVariable("instance-id") String instanceId) {
         // TODO - Complete
         log.info("Received request to delete profile data with id: {}", instanceId);

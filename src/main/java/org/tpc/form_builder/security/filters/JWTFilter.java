@@ -34,7 +34,12 @@ public class JWTFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             if (!jwtUtils.validateToken(token)) throw new ServletException("Invalid JWT token");
-            userPublicId = authHeader.substring(7);
+            try {
+                userPublicId = jwtUtils.extractUsername(token);
+            }
+            catch (Exception e) {
+                throw new ServletException("Error extracting username from JWT token", e);
+            }
         }
 
         if (userPublicId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
