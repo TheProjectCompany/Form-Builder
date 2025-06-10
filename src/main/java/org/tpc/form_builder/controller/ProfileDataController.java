@@ -1,5 +1,6 @@
 package org.tpc.form_builder.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 //import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +24,7 @@ public class ProfileDataController {
 
     // TODO - Change to dto
     @PostMapping("/validate")
-    public ResponseEntity<Map<String, List<String>>> validateProfileData(@RequestBody ProfileData profileData) {
+    public ResponseEntity<Map<String, List<String>>> validateProfileData(@RequestBody @Valid ProfileData profileData) {
         Map<String, List<String>> validationErrors = profileDataService.validateProfileData(profileData);
         if(!validationErrors.isEmpty()) {
             return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);

@@ -76,7 +76,9 @@ public class DataValidationUtility {
 
             // Perform validation and collect errors for each field
             List<String> fieldErrors = validateFieldData(formField, dataFieldsMap.get(fieldId));
-            errorMap.put(fieldId, fieldErrors);
+            if (!CollectionUtils.isEmpty(fieldErrors)) {
+                errorMap.put(fieldId, fieldErrors);
+            }
         }
 
         return errorMap;
@@ -85,22 +87,21 @@ public class DataValidationUtility {
     public List<String> validateFieldData(FormField formField, FormFieldData formFieldData) {
         List<String> errors = new ArrayList<>();
 
+        if (Boolean.TRUE.equals(formField.getReadOnly())) {
+            errors.add("Read-Only cannot be modified");
+            return errors;
+        }
+
         // 🚫 Skip validation for read-only fields or auto-computed fields or empty validation rules
-        if (Boolean.TRUE.equals(formField.getReadOnly()) ||
-                (formField.getComputationRules() != null && ComputationScope.DISABLED.equals(formField.getComputationRules().getComputationScope())) ||
-                formField.getValidationRules() == null) {
+        if (formField.getComputationRules() != null && ComputationScope.DISABLED.equals(formField.getComputationRules().getComputationScope())) {
             return errors;
         }
 
         // 🕳 If field data is missing or values are empty
         if (formFieldData == null || CollectionUtils.isEmpty(formFieldData.getValues())) {
-            if (Boolean.TRUE.equals(formField.getValidationRules().getRequired())) {
+            if (Boolean.TRUE.equals(formField.getRequired())) {
                 // ❗ Required field is missing
-                errors.add(String.format(
-                        "Required field %s (%s) is missing",
-                        formField.getFieldText(),
-                        formField.getKeyword()
-                ));
+                errors.add("This is a required field");
             }
             // Nothing else to validate if data is missing
             return errors;
@@ -109,7 +110,7 @@ public class DataValidationUtility {
         errors.addAll(switch (formField.getFieldType()) {
             case TEXT, PARAGRAPH -> validateTextAndParagraphField(formField, formFieldData.getValues());
             case NUMBER, DECIMAL -> validateNumberAndDecimalField(formField, formFieldData.getValues());
-            case CHECKBOX -> validateBooleanField(formField, formFieldData.getValues());
+            case BOOLEAN -> validateBooleanField(formField, formFieldData.getValues());
             case DATE -> validateDateField(formField, formFieldData.getValues());
             case DATETIME -> validateDateTimeField(formField, formFieldData.getValues());
             case DROPDOWN -> validateDropdownField(formField, formFieldData.getValues(), new HashMap<>());
@@ -124,14 +125,19 @@ public class DataValidationUtility {
         List<String> errors = new ArrayList<>();
 
         if (CollectionUtils.isEmpty(values)) {
-            return List.of("No date value provided");
+            return List.of(); // No date value provided
         }
 
         String dateStr = values.getFirst();
         ValidationRules rules = formField.getValidationRules();
+        boolean validationEnabled = rules != null && Boolean.TRUE.equals(rules.getEnabled());
 
         try {
             LocalDate dateValue = LocalDate.parse(dateStr);
+
+            if (!validationEnabled) {
+                return errors;
+            }
 
             validateMinDate(rules, dateValue, errors);
             validateMaxDate(rules, dateValue, errors);
@@ -200,11 +206,13 @@ public class DataValidationUtility {
         List<String> errors = new ArrayList<>();
 
         if (CollectionUtils.isEmpty(values)) {
-            return List.of("No datetime value provided");
+            return List.of(); // No datetime value provided
         }
 
         String input = values.getFirst();
         ValidationRules rules = formField.getValidationRules();
+
+        boolean validationEnabled = rules != null && Boolean.TRUE.equals(rules.getEnabled());
 
         try {
             // 🕒 Parse input datetime as UTC
@@ -213,7 +221,7 @@ public class DataValidationUtility {
             ZonedDateTime nowUtc = ZonedDateTime.now(ZoneOffset.UTC);
 
             // ✅ Min datetime check
-            if (rules.getMinDateTime() != null) {
+            if (validationEnabled && rules.getMinDateTime() != null) {
                 ZonedDateTime minAllowed = ZonedDateTime.parse(rules.getMinDateTime()).withZoneSameInstant(ZoneOffset.UTC);
                 if (inputDateTime.isBefore(minAllowed)) {
                     errors.add("Datetime is before the minimum allowed: " + minAllowed);
@@ -221,7 +229,7 @@ public class DataValidationUtility {
             }
 
             // ✅ Max datetime check
-            if (rules.getMaxDateTime() != null) {
+            if (validationEnabled && rules.getMaxDateTime() != null) {
                 ZonedDateTime maxAllowed = ZonedDateTime.parse(rules.getMaxDateTime()).withZoneSameInstant(ZoneOffset.UTC);
                 if (inputDateTime.isAfter(maxAllowed)) {
                     errors.add("Datetime is after the maximum allowed: " + maxAllowed);
@@ -229,7 +237,7 @@ public class DataValidationUtility {
             }
 
             // ✅ Future or Past only validation
-            if (rules.getDateValidationType() != null) {
+            if (validationEnabled && rules.getDateValidationType() != null) {
                 switch (rules.getDateValidationType()) {
                     case DOB -> validateDateOfBirth(inputDateTime, nowUtc, errors, formField.getFieldText());
                     case DUE_DATE -> validateDueDate(inputDateTime, nowUtc, errors, formField.getFieldText());
@@ -268,10 +276,14 @@ public class DataValidationUtility {
     /**
      * Validates BOOLEAN Fields
      */
-    private List<String> validateBooleanField(FormField profileField, List<String> values) {
+    private List<String> validateBooleanField(FormField formField, List<String> values) {
         List<String> errors = new ArrayList<>();
 
         String value = values.getFirst().toLowerCase(Locale.ROOT);
+
+        ValidationRules rules = formField.getValidationRules();
+        boolean validationEnabled = rules != null && Boolean.TRUE.equals(rules.getEnabled());
+
 
         // ✅ Check for valid boolean input
         if (!value.equals("true") && !value.equals("false")) {
@@ -279,9 +291,8 @@ public class DataValidationUtility {
         }
 
         // ✅ Optional: if only 'true' is allowed (e.g., user must accept terms)
-        ValidationRules rules = profileField.getValidationRules();
-        if (Boolean.TRUE.equals(rules.getOnlyTrueAllowed()) && !value.equals("true")) {
-            errors.add(String.format("'%s' must be set to TRUE", profileField.getFieldText()));
+        if (validationEnabled && Boolean.TRUE.equals(rules.getOnlyTrueAllowed()) && !value.equals("true")) {
+            errors.add(String.format("'%s' must be set to TRUE", formField.getFieldText()));
         }
 
         return errors;
@@ -294,20 +305,22 @@ public class DataValidationUtility {
         List<String> errors = new ArrayList<>();
 
         String value = values.getFirst();
+
         ValidationRules rules = profileField.getValidationRules();
+        boolean validationEnabled = rules != null && Boolean.TRUE.equals(rules.getEnabled());
 
         // ✅ Min length check
-        if (rules.getMinLength() != null && value.length() < rules.getMinLength()) {
+        if (validationEnabled && rules.getMinLength() != null && value.length() < rules.getMinLength()) {
             errors.add(String.format("Text is shorter than minimum length of %d", rules.getMinLength()));
         }
 
         // ✅ Max length check
-        if (rules.getMaxLength() != null && value.length() > rules.getMaxLength()) {
+        if (validationEnabled && rules.getMaxLength() != null && value.length() > rules.getMaxLength()) {
             errors.add(String.format("Text exceeds maximum length of %d", rules.getMaxLength()));
         }
 
         // ✅ Pattern (Regex) check
-        if (StringUtils.isNotBlank(rules.getPattern())) {
+        if (validationEnabled && StringUtils.isNotBlank(rules.getPattern())) {
             try {
                 Pattern pattern = Pattern.compile(rules.getPattern());
                 if (!pattern.matcher(value).matches()) {
@@ -324,30 +337,37 @@ public class DataValidationUtility {
     /**
      * Validates numeric fields
      */
-    private List<String> validateNumberAndDecimalField(FormField profileField, List<String> values) {
+    private List<String> validateNumberAndDecimalField(FormField formField, List<String> values) {
         List<String> fieldErrors = new ArrayList<>();
 
+        ValidationRules rules = formField.getValidationRules();
+
         if (CollectionUtils.isEmpty(values)) {
-            return List.of("No value provided for numeric field");
+            log.debug("No value provided for numeric field");
+            return fieldErrors;
         }
+
+        boolean validationEnabled = rules != null && Boolean.TRUE.equals(rules.getEnabled());
 
         try {
             BigDecimal numberValue = safeBigDecimal(values.getFirst());
 
-            // Minimum value check
-            fieldErrors.addAll(
-                    validateMinimumValueCheck(numberValue, profileField.getValidationRules().getMinValue())
-            );
+            if (validationEnabled) {
+                // Minimum value check
+                fieldErrors.addAll(
+                        validateMinimumValueCheck(numberValue, formField.getValidationRules().getMinValue())
+                );
 
-            // Maximum value check
-            fieldErrors.addAll(
-                    validateMaximumValueCheck(numberValue, profileField.getValidationRules().getMaxValue())
-            );
+                // Maximum value check
+                fieldErrors.addAll(
+                        validateMaximumValueCheck(numberValue, formField.getValidationRules().getMaxValue())
+                );
 
-            // Optional: negative value validation (if applicable)
-            fieldErrors.addAll(
-                    validateAllowNegative(numberValue, profileField.getValidationRules().getOnlyPositive())
-            );
+                // Optional: negative value validation (if applicable)
+                fieldErrors.addAll(
+                        validateAllowNegative(numberValue, formField.getValidationRules().getOnlyPositive())
+                );
+            }
 
             return fieldErrors;
         } catch (IllegalArgumentException e) {

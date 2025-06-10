@@ -51,7 +51,7 @@ public class EvaluatorUtility {
     private boolean evaluateJoinCondition(ProfileData instance, ConditionBuilder condition) {
         return switch (condition.getFieldType()) {
             case DROPDOWN -> evaluateDropdownCondition(instance, condition);
-            case CHECKBOX -> evaluateCheckboxCondition(instance, condition);
+            case BOOLEAN -> evaluateCheckboxCondition(instance, condition);
             default -> {
                 log.info("Field type ({}) is not supported yet for join condition", condition.getFieldType());
                 yield false;

@@ -12,6 +12,7 @@ import org.tpc.form_builder.models.FormFieldData;
 import org.tpc.form_builder.models.ProfileData;
 import org.tpc.form_builder.models.repository.ProfileDataRepository;
 import org.tpc.form_builder.service.ProfileDataService;
+import org.tpc.form_builder.service.WatcherService;
 import org.tpc.form_builder.utils.DataValidationUtility;
 
 import java.util.HashMap;
@@ -25,6 +26,7 @@ public class ProfileDataServiceImpl implements ProfileDataService {
 
     private final DataValidationUtility dataValidationUtility;
     private final ProfileDataRepository profileDataRepository;
+    private final WatcherService watcherService;
 
     @Override
     public Map<String, List<String>> validateProfileData(ProfileData profileData) {
@@ -51,6 +53,7 @@ public class ProfileDataServiceImpl implements ProfileDataService {
     }
 
     @Override
+    @Transactional
     public ProfileData updateProfileData (String instanceId, ProfileData profileData) {
         ProfileData existingProfileData = profileDataRepository.findByClientIdAndId(CommonConstants.DEFAULT_CLIENT, instanceId)
                 .orElseThrow(() -> new BadRequestException("Invalid Instance Id"));
@@ -86,6 +89,7 @@ public class ProfileDataServiceImpl implements ProfileDataService {
         profileDataRepository.save(profileData);
 
         triggerFieldWatchers(profileData, updatedFields);
+        removeInvisibleFields(profileData.getDataMap());
 
         return profileData;
     }
@@ -103,5 +107,6 @@ public class ProfileDataServiceImpl implements ProfileDataService {
 
     private void triggerFieldWatchers(ProfileData instance, Map<String, FormFieldData> updatedFieldDataMap) {
         // Use this method to trigger field watchers
+        watcherService.consumeWatchers(instance, updatedFieldDataMap);
     }
 }

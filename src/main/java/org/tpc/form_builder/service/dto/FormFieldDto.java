@@ -1,6 +1,7 @@
 package org.tpc.form_builder.service.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +26,7 @@ public class FormFieldDto {
     private String sectionId;
     private String profileId;
 
-    @NotBlank(message = "Field type must not be null")
+    @NotNull(message = "Field type must not be null")
     private FieldType fieldType;
 
     private String helpText;
@@ -34,7 +35,7 @@ public class FormFieldDto {
     private String referenceId;
     private String defaultValue;
 
-    private Visibility visibility;
+    private Visibility visibilityRules;
 
     @Builder.Default
     private int sortOrder = 1;

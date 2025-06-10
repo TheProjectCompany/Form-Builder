@@ -5,9 +5,13 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.tpc.form_builder.constants.CommonConstants;
 import org.tpc.form_builder.enums.WatcherScope;
 import org.tpc.form_builder.models.*;
+import org.tpc.form_builder.models.repository.FormFieldRepository;
+import org.tpc.form_builder.models.repository.ProfileDataRepository;
 import org.tpc.form_builder.service.FieldWatchers;
+import org.tpc.form_builder.utils.EvaluatorUtility;
 import org.tpc.form_builder.utils.FieldWatcherUtils;
 
 import java.util.*;
@@ -19,6 +23,9 @@ import java.util.stream.Collectors;
 public class VisibilityWatchers implements FieldWatchers {
 
     private final FieldWatcherUtils fieldWatcherUtils;
+    private final FormFieldRepository formFieldRepository;
+    private final EvaluatorUtility evaluatorUtility;
+    private final ProfileDataRepository profileDataRepository;
 
     @Override
     @Async("asyncTaskExecutor")
@@ -45,11 +52,42 @@ public class VisibilityWatchers implements FieldWatchers {
 
     @Override
     public void consumeWatchers(List<FieldWatcher> watchers, ProfileData instance) {
-        // TODO - Complete this to consume watchers when values change
         if (CollectionUtils.isEmpty(watchers)) {
             return;
         }
 
+        // TODO - Extend this to calculate for other instances as well
+        Set<String> currentInstanceFieldIds = watchers.stream()
+                .map(FieldWatcher::getAffectingFields)
+                .filter(affectingFields -> affectingFields.containsKey(instance.getProfileId()))
+                .map(watcher -> watcher.get(instance.getProfileId()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+
+        List<FormField> affectingFormFields = formFieldRepository.findAllByClientIdAndIsActiveAndIdIn(
+                CommonConstants.DEFAULT_CLIENT,
+                Boolean.TRUE,
+                currentInstanceFieldIds
+        );
+
+        // Re-Calculate all affecting fields
+        for (FormField affectingFormField : affectingFormFields) {
+            reCalculateAffectingField(instance, affectingFormField);
+        }
+
+        profileDataRepository.save(instance);
+    }
+
+    private void reCalculateAffectingField(ProfileData instance, FormField formField) {
+        if (formField.getVisibilityRules() == null || !Boolean.TRUE.equals(formField.getVisibilityRules().getEnabled())) {
+            return;
+        }
+        Visibility visibility = formField.getVisibilityRules();
+        if (instance.getDataMap() == null || !instance.getDataMap().containsKey(formField.getId())) {
+            return;
+        }
+        boolean result = evaluatorUtility.evaluateInstanceCondition(instance, visibility.getConditions());
+        instance.getDataMap().get(formField.getId()).setVisible(result);
     }
 
     private Map<String, Set<String>> aggregateSourceFields(Visibility visibility) {
@@ -71,8 +109,7 @@ public class VisibilityWatchers implements FieldWatchers {
     }
 
     private void addJoinFields(ConditionBuilder condition, Map<String, Set<String>> resultMap) {
-        condition.getJoinExpressions().forEach(expr -> resultMap
-                .computeIfAbsent(expr.getProfileId(), key -> new HashSet<>())
-                .add(expr.getFieldId()));
+        resultMap.computeIfAbsent(condition.getProfileId(), key -> new HashSet<>())
+                        .add(condition.getFieldId());
     }
 }

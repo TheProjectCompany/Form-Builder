@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
-@Document(collection = "profile")
+@Document(collection = "fieldWatcher")
 @Data
 @SuperBuilder
 @NoArgsConstructor

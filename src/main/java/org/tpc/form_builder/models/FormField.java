@@ -7,6 +7,8 @@ import org.tpc.form_builder.enums.FieldType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @EqualsAndHashCode(callSuper = true)
 @Document(collection = "formField")
 @Data
@@ -34,7 +36,8 @@ public class FormField extends BaseAttributes {
     private FieldType fieldType;
 
     private String helpText;
-    private String defaultValue;
+    private List<String> defaultValues;
+    private Boolean required;
     private Boolean readOnly;
     private ValidationRules validationRules;
     private Visibility visibilityRules;
