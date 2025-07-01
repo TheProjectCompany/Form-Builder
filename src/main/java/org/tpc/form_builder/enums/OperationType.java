@@ -1,10 +1,14 @@
 package org.tpc.form_builder.enums;
 
+import lombok.Getter;
+
+@SuppressWarnings("unused")
+@Getter
 public enum OperationType {
     CONSTANT("CONSTANT"),
 
     // Basic arithmetic operations
-    ADDITION("+"),
+    ADDITION("+"), // Supported for Strings as well
     SUBTRACTION("-"),
     MULTIPLICATION("*"),
     DIVISION("/"),
@@ -18,6 +22,7 @@ public enum OperationType {
     NOT("!"),
 
     // Comparison operations
+    // Supported for multiple types like numeric, date, string, dropdown
     EQUALS("=="),
     NOT_EQUALS("!="),
     GREATER_THAN(">"),
@@ -30,8 +35,18 @@ public enum OperationType {
     STARTS_WITH("startsWith"),
     ENDS_WITH("endsWith"),
 
-    // String operations
-    CONCATENATION("+"),
+    // Aggregate Operations
+    COUNT("count"),
+    SUM("sum"),
+    AVERAGE("average"),
+    MIN("min"),
+    MAX("max"),
+
+    // Collection Operations
+    LENGTH("length"),
+    EMPTY("empty"),
+    NOT_EMPTY("!empty"),
+
 
     // Other expressions
     FUNCTION_CALL("FUNCTION_CALL");
@@ -42,7 +57,4 @@ public enum OperationType {
         this.symbol = symbol;
     }
 
-    public String getSymbol() {
-        return symbol;
-    }
 }
