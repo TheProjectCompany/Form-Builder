@@ -6,6 +6,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.tpc.form_builder.constants.CommonConstants;
+import org.tpc.form_builder.enums.ExpressionType;
+import org.tpc.form_builder.enums.OperationType;
 import org.tpc.form_builder.enums.WatcherScope;
 import org.tpc.form_builder.models.*;
 import org.tpc.form_builder.models.repository.FormFieldRepository;
@@ -86,8 +88,15 @@ public class VisibilityWatchers implements FieldWatchers {
         if (instance.getDataMap() == null || !instance.getDataMap().containsKey(formField.getId())) {
             return;
         }
-        boolean result = evaluatorUtility.evaluateInstanceCondition(instance, visibility.getConditions());
-        instance.getDataMap().get(formField.getId()).setVisible(result);
+        try {
+            List<String> expressionResult = visibility.getExpression().evaluateExpression(instance.getDataMap());
+            if (CollectionUtils.isEmpty(expressionResult)) return; // Skip if no result from expression
+            instance.getDataMap().get(formField.getId()).setVisible(Boolean.parseBoolean(expressionResult.getFirst()));
+        }
+        catch (IllegalArgumentException | ArithmeticException e) {
+            log.error("Error evaluating visibility expression for fieldId: {} in instanceId: {}", formField.getId(), instance.getId(), e);
+            return; // Skip this field if evaluation fails
+        }
     }
 
     private Map<String, Set<String>> aggregateSourceFields(Visibility visibility) {
@@ -96,20 +105,21 @@ public class VisibilityWatchers implements FieldWatchers {
         }
 
         Map<String, Set<String>> sourceFields = new HashMap<>();
-        extractSourceFields(visibility.getConditions(), sourceFields);
+        extractSourceFields(visibility.getExpression(), sourceFields);
         return sourceFields;
     }
 
-    private void extractSourceFields(ConditionBuilder condition, Map<String, Set<String>> resultMap) {
-        switch (condition.getConditionType()) {
-            case JOIN -> addJoinFields(condition, resultMap);
-            case AND, OR -> condition.getJoinExpressions()
-                    .forEach(subCondition -> extractSourceFields(subCondition, resultMap));
-        }
-    }
-
-    private void addJoinFields(ConditionBuilder condition, Map<String, Set<String>> resultMap) {
-        resultMap.computeIfAbsent(condition.getProfileId(), key -> new HashSet<>())
-                        .add(condition.getFieldId());
+    private void extractSourceFields(Expression expression, Map<String, Set<String>> resultMap) {
+         if (expression == null) {
+             return; // No operands to process
+         }
+         if (ExpressionType.LEAF.equals(expression.getExpressionType()) && !OperationType.CONSTANT.equals(expression.getOperatorType())) {
+             resultMap.computeIfAbsent("PROFILE", k -> new HashSet<>()).add(expression.getFieldId());
+         }
+         if (CollectionUtils.isEmpty(expression.getOperands())) {
+             for (Expression operand : expression.getOperands()) {
+                 extractSourceFields(operand, resultMap);
+             }
+         }
     }
 }

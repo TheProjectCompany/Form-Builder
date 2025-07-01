@@ -6,8 +6,12 @@ import lombok.experimental.SuperBuilder;
 import org.tpc.form_builder.enums.FieldType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.tpc.form_builder.exception.BadRequestException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Document(collection = "formField")
@@ -54,5 +58,13 @@ public class FormField extends BaseAttributes {
     @NotNull(message = "Sort order must not be null")
     @Builder.Default
     private int sortOrder = 1;
+
+    public List<String> validateFormField() {
+        List<String> errors = new ArrayList<>();
+        if (Boolean.TRUE.equals(required) && Boolean.TRUE.equals(readOnly)) {
+            errors.add("Field cannot be both required and read-only.");
+        }
+        return errors;
+    }
 }
 
