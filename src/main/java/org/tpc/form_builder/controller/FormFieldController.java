@@ -1,14 +1,15 @@
 package org.tpc.form_builder.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.tpc.form_builder.models.FormField;
-import org.tpc.form_builder.service.FormFieldService;
-import org.tpc.form_builder.service.dto.FormFieldDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.tpc.form_builder.models.FormField;
+import org.tpc.form_builder.service.FormFieldService;
 
 import java.util.List;
 
@@ -29,10 +30,5 @@ public class FormFieldController {
     public ResponseEntity<List<FormField>> getSectionById(@PathVariable("section-id") String sectionId) {
         List<FormField> sectionFields = formFieldService.getFormFieldsBySectionId(sectionId);
         return new ResponseEntity<>(sectionFields, HttpStatus.OK);
-    }
-
-    @PostMapping
-    public ResponseEntity<FormFieldDto> createFormField(@RequestBody @Valid FormFieldDto formFieldDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(formFieldService.createFormField(formFieldDto));
     }
 }

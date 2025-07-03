@@ -14,6 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 public class ChangeDto {
     private AuditAction action;
+    private AuditEntity auditEntity;
+    private String fieldName;
     private FieldType fieldType;
     private List<Object> previousValues;
     private List<Object> newValues;

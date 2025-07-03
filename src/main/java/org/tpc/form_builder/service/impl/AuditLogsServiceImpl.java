@@ -29,7 +29,6 @@ public class AuditLogsServiceImpl implements AuditLogsService {
 
     @Override
     @Async("asyncTaskExecutor")
-    @Transactional
     public void consumeAuditLogHelper() {
         ZonedDateTime now = ZonedDateTime.now();
         log.info("Audit Log Consumer ({}): {} items in queue", now, auditLogQueue.size());

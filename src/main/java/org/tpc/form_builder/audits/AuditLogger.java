@@ -257,7 +257,7 @@ public class AuditLogger {
         // TODO - Complete this section Audit Logging
         @SuppressWarnings("unchecked")
         List<Section> previousSectionList = (List<Section>) previousObject;
-        @SuppressWarnings("unchecked")
+         @SuppressWarnings("unchecked")
         List<Section> newSectionList = (List<Section>) newObject;
         return diffMap;
     }

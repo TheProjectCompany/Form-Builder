@@ -35,7 +35,7 @@ public class FormFieldServiceImpl implements FormFieldService {
     }
 
     @Override
-    public FormFieldDto createFormField(FormFieldDto formFieldDto) {
+    public FormFieldDto createFormField(String profileId, String sectionId, FormFieldDto formFieldDto) {
         // 1. Fetch profile (to validate existence and status)
         Profile parentProfile = profileRepository.findByClientIdAndIdAndIsActive(
                 CommonConstants.DEFAULT_CLIENT,

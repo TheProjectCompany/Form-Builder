@@ -1,5 +1,6 @@
 package org.tpc.form_builder.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 //import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,7 +24,7 @@ public class ProfileDataController {
 
     // TODO - Change to dto
     @PostMapping("/validate")
-    public ResponseEntity<Map<String, List<String>>> validateProfileData(@RequestBody ProfileData profileData) {
+    public ResponseEntity<Map<String, List<String>>> validateProfileData(@RequestBody @Valid ProfileData profileData) {
         Map<String, List<String>> validationErrors = profileDataService.validateProfileData(profileData);
         if(!validationErrors.isEmpty()) {
             return new ResponseEntity<>(validationErrors, HttpStatus.BAD_REQUEST);
@@ -37,17 +38,22 @@ public class ProfileDataController {
         return ResponseEntity.status(HttpStatus.CREATED).body(profileDataService.createProfileData(profileData));
     }
 
-    @PutMapping("/instance/{instance-id}")
+    @GetMapping("/{instance-id}")
+    public ResponseEntity<ProfileData> getProfileDataInstance(@PathVariable("instance-id") String instanceId) {
+        return ResponseEntity.status(HttpStatus.OK).body(profileDataService.getProfileDataInstance(instanceId));
+    }
+
+    @PutMapping("/{instance-id}")
     public ResponseEntity<ProfileData> updateProfileData(@PathVariable("instance-id") String instanceId, @RequestBody ProfileData profileData) {
         return ResponseEntity.status(HttpStatus.OK).body(profileDataService.updateProfileData(instanceId, profileData));
     }
 
-    @PatchMapping("/instance/{instance-id}")
+    @PatchMapping("/{instance-id}")
     public ResponseEntity<ProfileData> updateProfileDataFields(@PathVariable("instance-id") String instanceId, @RequestBody Map<String, FormFieldData> fieldData) {
         return ResponseEntity.status(HttpStatus.OK).body(profileDataService.updateProfileDataFields(instanceId, fieldData));
     }
 
-    @DeleteMapping("/instance/{instance-id}")
+    @DeleteMapping("/{instance-id}")
     public ResponseEntity<Void> deleteProfileData(@PathVariable("instance-id") String instanceId) {
         // TODO - Complete
         log.info("Received request to delete profile data with id: {}", instanceId);

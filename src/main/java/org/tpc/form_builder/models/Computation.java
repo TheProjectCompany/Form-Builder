@@ -5,8 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.tpc.form_builder.enums.ComputationScope;
+import org.tpc.form_builder.enums.FieldType;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -14,9 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 public class Computation {
     // Dependent Field IDs
-    private List<String> dependsOn;
-    // Calculation Expression
-    private String expression;
+    private Set<String> dependsOn;
+    private Expression expression;
     @Builder.Default
     private ComputationScope computationScope = ComputationScope.DISABLED;
 }

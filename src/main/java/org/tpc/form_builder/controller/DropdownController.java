@@ -1,11 +1,12 @@
 package org.tpc.form_builder.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import org.tpc.form_builder.models.Dropdown;
 import org.tpc.form_builder.models.DropdownElement;
-import org.springframework.web.bind.annotation.*;
+import org.tpc.form_builder.service.DropdownService;
 
 @RestController
 @RequestMapping("/api/v1/dropdown")
@@ -13,10 +14,13 @@ import org.springframework.web.bind.annotation.*;
 @Log4j2
 public class DropdownController {
 
+    private final DropdownService dropdownService;
+
     @PostMapping()
 //    @PreAuthorize("hasAuthority('ADMIN')")
-    public void createDropdown(@RequestBody Dropdown dropdown) {
+    public void createDropdown(@RequestBody @Valid Dropdown dropdown) {
         log.info("Received request to create dropdown: {}", dropdown);
+        dropdownService.createCustomDropdown(dropdown);
     }
 
     @GetMapping("/{id}")

@@ -20,9 +20,6 @@ public class SectionDto {
 
     private String description;
 
-    @NotBlank(message = "Parent profile ID must not be blank")
-    private String parentProfileId;
-
     @Builder.Default
     private SectionType type = SectionType.GENERAL;
 

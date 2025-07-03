@@ -8,5 +8,5 @@ import java.util.List;
 public interface FormFieldService {
     FormField getFormFieldById(String id);
     List<FormField> getFormFieldsBySectionId(String sectionId);
-    FormFieldDto createFormField(FormFieldDto formFieldDto);
+    FormFieldDto createFormField(String profileId, String sectionId, FormFieldDto formFieldDto);
 }

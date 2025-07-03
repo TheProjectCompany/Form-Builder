@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ValidationRules {
-    private Boolean required;
+    private Boolean enabled;
     private String errorMessage;
 
     // NUMBER / DECIMAL VALUES

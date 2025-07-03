@@ -26,6 +26,7 @@ public class AutoComputationService {
                 ComputationScope.DISABLED,
                 updatedFieldDataMap.keySet().stream().toList()
         );
+
     }
 
     public void consumeUpdates() {

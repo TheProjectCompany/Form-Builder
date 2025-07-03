@@ -1,11 +1,13 @@
 package org.tpc.form_builder.service.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.tpc.form_builder.enums.FieldType;
+import org.tpc.form_builder.models.Visibility;
 
 @Data
 @Builder
@@ -21,13 +23,10 @@ public class FormFieldDto {
     @NotBlank(message = "Keyword must not be null")
     private String keyword;
 
-    @NotBlank(message = "Section ID must not be null")
     private String sectionId;
-
-    @NotBlank(message = "Profile ID must not be null")
     private String profileId;
 
-    @NotBlank(message = "Field type must not be null")
+    @NotNull(message = "Field type must not be null")
     private FieldType fieldType;
 
     private String helpText;
@@ -35,6 +34,8 @@ public class FormFieldDto {
     private Boolean required;
     private String referenceId;
     private String defaultValue;
+
+    private Visibility visibilityRules;
 
     @Builder.Default
     private int sortOrder = 1;
