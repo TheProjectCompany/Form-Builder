@@ -19,6 +19,7 @@ import static org.tpc.form_builder.enums.FieldType.*;
 @AllArgsConstructor
 public class Expression {
     private FieldType resultType;
+    private FieldType fieldType;
     private ExpressionType expressionType;
     private List<Expression> operands;
     private OperationType operatorType;
@@ -41,7 +42,6 @@ public class Expression {
             case LOGICAL -> evaluateLogical(fieldDataMap);
             case COMPARISON -> evaluateComparison(fieldDataMap);
             case STRING -> evaluateString(fieldDataMap);
-            case COLLECTION -> evaluateCollection(fieldDataMap);
             default -> null;
         };
     }
@@ -50,10 +50,43 @@ public class Expression {
 
     private List<String> evaluateLeaf(Map<String, FormFieldData> fieldDataMap) {
         if (OperationType.CONSTANT.equals(operatorType)) return constantValues;
-        if (CollectionUtils.isEmpty(fieldDataMap) || !fieldDataMap.containsKey(fieldId) || CollectionUtils.isEmpty(fieldDataMap.get(fieldId).getValues())) {
+        if (CollectionUtils.isEmpty(fieldDataMap) || !fieldDataMap.containsKey(fieldId)) {
             throw new IllegalArgumentException("Field data not found for field id: " + fieldId);
         }
-        return fieldDataMap.get(fieldId).getValues();
+        List<String> values = fieldDataMap.get(fieldId).getValues();
+        return switch (operatorType) {
+            case LENGTH -> calculateLength(values);
+            case EMPTY -> List.of(String.valueOf(calculateEmpty(values)));
+            case NOT_EMPTY -> List.of(String.valueOf(!calculateEmpty(values)));
+            default -> values;
+        };
+    }
+
+    // --- Leaf Evaluation ---
+    private List<String> calculateLength(List<String> values) {
+        switch (fieldType) {
+            case FieldType.TEXT, FieldType.PARAGRAPH -> {
+                String first = values.getFirst();
+                return List.of((first == null) ? "0" : String.valueOf(first.length()));
+            }
+            case FieldType.DROPDOWN -> {
+                return List.of(String.valueOf(values.size()));
+            }
+            default -> throw new UnsupportedOperationException("LENGTH/COUNT not supported for field type: " + fieldType);
+        }
+    }
+
+    private boolean calculateEmpty(List<String> values) {
+        switch (fieldType) {
+            case FieldType.TEXT, FieldType.PARAGRAPH -> {
+                String first = (CollectionUtils.isEmpty(values) ? null : values.getFirst());
+                return StringUtils.isEmpty(first);
+            }
+            case FieldType.DROPDOWN -> {
+                return CollectionUtils.isEmpty(values);
+            }
+            default -> throw new UnsupportedOperationException("EMPTY/NOT_EMPTY not supported for field type: " + fieldType);
+        }
     }
 
     private List<String> evaluateArithmetic(Map<String, FormFieldData> fieldDataMap) {
@@ -276,48 +309,6 @@ public class Expression {
             return new BigDecimal(input.trim());
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid number: " + input, e);
-        }
-    }
-
-    // --- Collection Operations ---
-
-    private List<String> evaluateCollection(Map<String, FormFieldData> fieldDataMap) {
-        validateOperandCount(1, "collection");
-        List<String> values = operands.getFirst().evaluateExpression(fieldDataMap);
-        FieldType operandType = operands.getFirst().getResultType();
-        String result;
-        switch (operatorType) {
-            case LENGTH, COUNT -> result = getLengthOrCount(values, operandType);
-            case EMPTY -> result = String.valueOf(isEmptyCollection(values, operandType));
-            case NOT_EMPTY -> result = String.valueOf(!isEmptyCollection(values, operandType));
-            default -> throw new UnsupportedOperationException("Unsupported collection operator: " + operatorType);
-        }
-        return List.of(result);
-    }
-
-    private String getLengthOrCount(List<String> values, FieldType operandType) {
-        switch (operandType) {
-            case FieldType.TEXT, FieldType.PARAGRAPH -> {
-                String first = (values.isEmpty() ? null : values.getFirst());
-                return (first == null) ? "0" : String.valueOf(first.length());
-            }
-            case FieldType.DROPDOWN -> {
-                return String.valueOf(values.size());
-            }
-            default -> throw new UnsupportedOperationException("LENGTH/COUNT not supported for field type: " + operandType);
-        }
-    }
-
-    private boolean isEmptyCollection(List<String> values, FieldType operandType) {
-        switch (operandType) {
-            case FieldType.TEXT, FieldType.PARAGRAPH -> {
-                String first = (CollectionUtils.isEmpty(values) ? null : values.getFirst());
-                return StringUtils.isEmpty(first);
-            }
-            case FieldType.DROPDOWN -> {
-                return CollectionUtils.isEmpty(values);
-            }
-            default -> throw new UnsupportedOperationException("EMPTY/NOT_EMPTY not supported for field type: " + operandType);
         }
     }
 }
