@@ -76,6 +76,15 @@ public class ProfileServiceImpl implements ProfileService {
         return formFieldMapper.toDto(formField);
     }
 
+    @Override
+    public List<ProfileDto> getProfiles() {
+        List<Profile> profilesList = profileRepository.findAll();
+        if (!profilesList.isEmpty()) {
+            return profileMapper.toDto(profilesList);
+        }
+        return List.of();
+    }
+
     private void validateProfile(ProfileDto profileDto) {
         if (profileRepository.existsByClientIdAndName(CommonConstants.DEFAULT_CLIENT, profileDto.getName())) {
             throw new AlreadyExistsException("Duplicate Profile Name");

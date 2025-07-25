@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.util.CollectionUtils;
 import org.tpc.form_builder.audits.AuditAction;
@@ -30,6 +31,9 @@ public class ProfileData extends BaseAttributes{
     private String profileId;
     @Builder.Default
     private Map<String, FormFieldData> dataMap = new HashMap<>();
+
+    @Version
+    private Integer version;
 
     public static Map<String, ChangeDto> auditComparator(ProfileData previousObject, ProfileData currentObject) {
         Map<String, ChangeDto> diffMap = new HashMap<>();

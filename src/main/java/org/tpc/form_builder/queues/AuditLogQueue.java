@@ -14,19 +14,19 @@ import java.util.concurrent.LinkedBlockingQueue;
 @RequiredArgsConstructor
 @Log4j2
 public class AuditLogQueue {
-    private final BlockingQueue<AuditDto> auditLogQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<AuditDto> auditQueue = new LinkedBlockingQueue<>();
 
     public void enqueue(AuditDto auditDto) {
-        auditLogQueue.add(auditDto);
+        auditQueue.add(auditDto);
     }
 
     public List<AuditDto> dequeueBatch(int maxBatchSize) {
         List<AuditDto> batch = new ArrayList<>();
-        auditLogQueue.drainTo(batch, maxBatchSize);
+        auditQueue.drainTo(batch, maxBatchSize);
         return batch;
     }
 
      public int size() {
-        return auditLogQueue.size();
+        return auditQueue.size();
      }
 }

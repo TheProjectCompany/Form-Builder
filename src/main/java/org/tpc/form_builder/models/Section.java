@@ -14,7 +14,6 @@ import org.springframework.data.annotation.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Section {
-    @Id
     private String id;
     private String name;
     private String description;

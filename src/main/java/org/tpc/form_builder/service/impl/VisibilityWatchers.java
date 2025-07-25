@@ -95,7 +95,6 @@ public class VisibilityWatchers implements FieldWatchers {
         }
         catch (IllegalArgumentException | ArithmeticException e) {
             log.error("Error evaluating visibility expression for fieldId: {} in instanceId: {}", formField.getId(), instance.getId(), e);
-            return; // Skip this field if evaluation fails
         }
     }
 
