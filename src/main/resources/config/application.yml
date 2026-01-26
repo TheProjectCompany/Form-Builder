@@ -1,0 +1,12 @@
+server:
+  port: 8090
+  servlet:
+    context-path: /form-builder
+spring:
+  application:
+    name: Form Builder 2.0
+  main:
+    allow-bean-definition-overriding: true
+  jpa:
+    hibernate:
+      ddl-auto: create
