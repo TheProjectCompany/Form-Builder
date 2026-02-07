@@ -1,5 +1,6 @@
 package com.tpc.form_builder.models;
 
+import com.tpc.form_builder.models.enums.FieldType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -30,11 +31,17 @@ public class FieldData extends BaseEntity{
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id;
 
-    private UUID submissionId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "submission_id", nullable = false)
+    private Submission submission;
+
+//    private UUID submissionId;
     private UUID fieldId;
+    private FieldType fieldType;
 
     // Scalar Values for different field types
     private String textValue;
+    private String longTextValue;
     private BigDecimal numberValue;
     private Boolean booleanValue;
     private LocalDate dateValue;
@@ -44,7 +51,7 @@ public class FieldData extends BaseEntity{
             mappedBy = "fieldData",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     @Builder.Default
     private List<FieldDataMultiValue> multiValues = new ArrayList<>();

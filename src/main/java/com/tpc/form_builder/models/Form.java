@@ -1,12 +1,13 @@
 package com.tpc.form_builder.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.tpc.form_builder.models.enums.FormType;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @EqualsAndHashCode(callSuper = true)
@@ -19,5 +20,17 @@ public class Form extends BaseEntity {
     private UUID id;
 
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    private FormType formType;
+
+    @OneToMany(
+            mappedBy = "form",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<Field> fields = new ArrayList<>();
+
     private int version;
 }

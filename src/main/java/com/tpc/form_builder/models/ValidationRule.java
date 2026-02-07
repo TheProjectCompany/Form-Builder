@@ -20,4 +20,9 @@ public class ValidationRule {
     private BigDecimal maxValue;
     private Integer decimalPrecision;
     private Boolean onlyPositive;
+
+    // TEXT / PARAGRAPH
+    private Integer minLength;
+    private Integer maxLength;
+    private String pattern;
 }

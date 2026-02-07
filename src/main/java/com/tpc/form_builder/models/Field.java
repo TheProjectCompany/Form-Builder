@@ -1,13 +1,8 @@
 package com.tpc.form_builder.models;
 
-import com.tpc.form_builder.models.enums.FieldTypes;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import com.tpc.form_builder.models.enums.FieldType;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
@@ -16,7 +11,9 @@ import org.hibernate.type.SqlTypes;
 import java.util.UUID;
 
 @Entity
-@SuperBuilder(toBuilder = true)
+@Getter
+@Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Field extends BaseEntity {
@@ -25,12 +22,15 @@ public class Field extends BaseEntity {
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id;
 
-    private UUID formId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "form_id", nullable = false)
+    private Form form;
 
     private String fieldText;
     private String description;
 
-    private FieldTypes fieldType;
+    private FieldType fieldType;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")

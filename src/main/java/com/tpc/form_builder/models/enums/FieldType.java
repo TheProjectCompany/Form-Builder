@@ -3,10 +3,12 @@ package com.tpc.form_builder.models.enums;
 import lombok.Getter;
 
 @Getter
-public enum FieldTypes {
+public enum FieldType {
     TEXT("Text", "Single line text input"),
     PARAGRAPH("Paragraph", "Multi-line text input"),
     NUMBER("Number", "Numeric input"),
+    DECIMAL("Decimal", "Decimal number input"),
+    PERCENT("Percent", "Percental input (%)"),
     DROPDOWN("Dropdown", "Select from a list of options"),
     CHECKBOX("Checkbox", "Select multiple options"),
     RADIO("Radio", "Select a single option"),
@@ -41,7 +43,7 @@ public enum FieldTypes {
     private final String displayName;
     private final String description;
 
-    FieldTypes(String displayName, String description) {
+    FieldType(String displayName, String description) {
         this.displayName = displayName;
         this.description = description;
     }

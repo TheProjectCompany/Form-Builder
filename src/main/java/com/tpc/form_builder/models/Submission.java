@@ -1,18 +1,19 @@
 package com.tpc.form_builder.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @SuperBuilder
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Submission extends BaseEntity{
@@ -23,6 +24,14 @@ public class Submission extends BaseEntity{
 
     private UUID formId;
     private UUID userId;
+
+    @OneToMany(
+            mappedBy = "submission",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
+    private List<FieldData> dataList = new ArrayList<>();
 
     @Version
     private int version;

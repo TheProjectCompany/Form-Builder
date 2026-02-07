@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://form-builder-2-0-tpc-form-builder.d.aivencloud.com:25681
+    url: jdbc:postgresql://form-builder-2-0-tpc-form-builder.d.aivencloud.com:25681/defaultdb?ssl=require
     name: defaultdb
     username: avnadmin
     password: AVNS_O1YYa2xHHw8CBhYVz9w
