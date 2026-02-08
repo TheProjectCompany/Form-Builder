@@ -1,5 +1,6 @@
 package com.tpc.form_builder.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tpc.form_builder.models.enums.FieldType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +23,7 @@ public class Field extends BaseEntity {
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id;
 
-
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "form_id", nullable = false)
     private Form form;
@@ -34,7 +35,7 @@ public class Field extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private FieldConfig fieldConfig;
+    private FieldConfig fieldConfig = new FieldConfig();
 
     @Builder.Default
     private int sortOrder = 1;

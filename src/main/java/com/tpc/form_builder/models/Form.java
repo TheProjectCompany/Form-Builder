@@ -28,7 +28,7 @@ public class Form extends BaseEntity {
             mappedBy = "form",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<Field> fields = new ArrayList<>();
 
